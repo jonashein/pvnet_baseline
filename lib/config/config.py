@@ -8,8 +8,6 @@ cfg = CN()
 # model
 cfg.model = 'hello'
 cfg.model_dir = 'data/model'
-cfg.det_model = ''
-cfg.kpt_model = ''
 
 # network
 cfg.network = 'dla_34'
@@ -30,6 +28,9 @@ cfg.resume = True
 cfg.ep_iter = -1
 cfg.save_ep = 5
 cfg.eval_ep = 5
+
+# monitoring
+cfg.monitor = False
 
 
 # -----------------------------------------------------------------------------
@@ -77,11 +78,6 @@ cfg.test.det_gt = False
 
 cfg.test.batch_sampler = ''
 
-cfg.det_meta = CN()
-cfg.det_meta.arch = 'dla'
-cfg.det_meta.num_layers = 34
-cfg.det_meta.heads = CN({'ct_hm': 1, 'wh': 2})
-
 # recorder
 cfg.record_dir = 'data/record'
 
@@ -106,7 +102,6 @@ cfg.tless.ratio = 0.8
 
 _heads_factory = {
     'pvnet': CN({'vote_dim': 18, 'seg_dim': 2}),
-    'ct_pvnet': CN({'vote_dim': 18, 'seg_dim': 2}),
     'ct': CN({'ct_hm': 30, 'wh': 2})
 }
 
@@ -151,6 +146,7 @@ parser.add_argument("--cfg_file", default="configs/default.yaml", type=str)
 parser.add_argument('--test', action='store_true', dest='test', default=False)
 parser.add_argument("--type", type=str, default="")
 parser.add_argument('--det', type=str, default='')
+parser.add_argument('--vis_out', type=str, default=None)
 parser.add_argument("opts", default=None, nargs=argparse.REMAINDER)
 args = parser.parse_args()
 if len(args.type) > 0:

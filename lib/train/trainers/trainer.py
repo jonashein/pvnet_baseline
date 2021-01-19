@@ -2,14 +2,20 @@ import time
 import datetime
 import torch
 import tqdm
+import numpy as np
 from torch.nn import DataParallel
-
+from lib.evaluators.custom.monitor import MetricMonitor
 
 class Trainer(object):
-    def __init__(self, network):
+    def __init__(self, network, cfg):
         network = network.cuda()
         network = DataParallel(network)
         self.network = network
+        self.monitor = None
+        self.log_dir = cfg.record_dir
+        if cfg.monitor:
+            print("Will monitor metrics.")
+            self.monitor = MetricMonitor()
 
     def reduce_loss_stats(self, loss_stats):
         reduced_losses = {k: torch.mean(v) for k, v in loss_stats.items()}
@@ -36,6 +42,10 @@ class Trainer(object):
 
             # batch = self.to_cuda(batch)
             output, loss, loss_stats, image_stats = self.network(batch)
+
+            if self.monitor:
+                self.monitor.add('train', epoch, loss_stats)
+                self.monitor.add('train', epoch, image_stats)
 
             # training stage: loss; optimizer; scheduler
             loss = loss.mean()
@@ -68,6 +78,11 @@ class Trainer(object):
                 recorder.update_image_stats(image_stats)
                 recorder.record('train')
 
+                if self.monitor:
+                    self.monitor.plot("training.html", plotly=True)
+                    self.monitor.plot_histogram("evaluation.html", plotly=True)
+
+
     def val(self, epoch, data_loader, evaluator=None, recorder=None):
         self.network.eval()
         torch.cuda.empty_cache()
@@ -83,6 +98,10 @@ class Trainer(object):
                 if evaluator is not None:
                     evaluator.evaluate(output, batch)
 
+                if self.monitor:
+                    self.monitor.add('val', epoch, loss_stats)
+                    self.monitor.add('val', epoch, image_stats)
+
             loss_stats = self.reduce_loss_stats(loss_stats)
             for k, v in loss_stats.items():
                 val_loss_stats.setdefault(k, 0)
@@ -96,8 +115,17 @@ class Trainer(object):
 
         if evaluator is not None:
             result = evaluator.summarize()
+            if self.monitor:
+                self.monitor.add('val', epoch, result)
+
+            result = {k: np.mean(v) for k,v in result.items()}
             val_loss_stats.update(result)
 
         if recorder:
             recorder.record('val', epoch, val_loss_stats, image_stats)
+
+        if self.monitor:
+            self.monitor.save_metrics("data/record/metrics.pkl")
+            self.monitor.plot("data/record/training.html", plotly=True)
+            self.monitor.plot_histogram("data/record/evaluation.html", plotly=True)
 

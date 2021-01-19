@@ -1,6 +1,9 @@
 __pycache__/
+.cache/
+.conda/
 .idea/
 .ipynb_checkpoints/
+runs/
 *.py[cod]
 *.so
 *.orig

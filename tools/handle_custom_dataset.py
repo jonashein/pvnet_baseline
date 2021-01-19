@@ -16,10 +16,10 @@ def read_ply_points(ply_path):
     return points
 
 
-def sample_fps_points(data_root):
+def sample_fps_points(data_root, samples_count=8):
     ply_path = os.path.join(data_root, 'model.ply')
     ply_points = read_ply_points(ply_path)
-    fps_points = fps_utils.farthest_point_sampling(ply_points, 8, True)
+    fps_points = fps_utils.farthest_point_sampling(ply_points, samples_count, True)
     np.savetxt(os.path.join(data_root, 'fps.txt'), fps_points)
 
 

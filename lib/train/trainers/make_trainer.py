@@ -12,4 +12,4 @@ def _wrapper_factory(cfg, network):
 
 def make_trainer(cfg, network):
     network = _wrapper_factory(cfg, network)
-    return Trainer(network)
+    return Trainer(network, cfg)

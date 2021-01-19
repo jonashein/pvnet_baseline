@@ -8,7 +8,6 @@ class NetworkWrapper(nn.Module):
         super(NetworkWrapper, self).__init__()
 
         self.net = net
-
         self.vote_crit = torch.nn.functional.smooth_l1_loss
         self.seg_crit = nn.CrossEntropyLoss()
 

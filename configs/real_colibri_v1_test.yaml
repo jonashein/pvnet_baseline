@@ -1,0 +1,16 @@
+# wait
+model: 'custom'
+model_dir: 'data/model'
+network: 'res'
+heads: ''
+task: 'pvnet'
+gpus: [0]
+resume: True
+eval_ep: 1
+monitor: True
+
+test:
+    dataset: 'RealColibriV1_Test'
+    batch_size: 1
+    batch_sampler: 'image_size'
+    un_pnp: True

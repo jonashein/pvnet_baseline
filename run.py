@@ -50,7 +50,7 @@ def run_network():
         with torch.no_grad():
             torch.cuda.synchronize()
             start = time.time()
-            network(batch['inp'], batch)
+            network(batch['inp'])
             torch.cuda.synchronize()
             total_time += time.time() - start
     print(total_time / len(data_loader))
@@ -61,23 +61,44 @@ def run_evaluate():
     from lib.evaluators import make_evaluator
     import tqdm
     import torch
+    import pickle
+    import lzma
     from lib.networks import make_network
     from lib.utils.net_utils import load_network
+    from lib.evaluators.custom.monitor import MetricMonitor
+    from lib.visualizers import make_visualizer
 
     torch.manual_seed(0)
 
+    monitor = MetricMonitor()
     network = make_network(cfg).cuda()
-    load_network(network, cfg.model_dir, epoch=cfg.test.epoch)
+    epoch = load_network(network, cfg.model_dir, epoch=cfg.test.epoch)
     network.eval()
+    print("Trainable parameters: {}".format(sum(p.numel() for p in network.parameters())))
 
     data_loader = make_data_loader(cfg, is_train=False)
     evaluator = make_evaluator(cfg)
+    visualizer = make_visualizer(cfg)
+    idx = 0
+
+    if args.vis_out:
+        os.mkdir(args.vis_out)
+
     for batch in tqdm.tqdm(data_loader):
+        idx += 1
         inp = batch['inp'].cuda()
         with torch.no_grad():
             output = network(inp)
         evaluator.evaluate(output, batch)
-    evaluator.summarize()
+
+        if args.vis_out:
+            err = evaluator.data["obj_drilltip_trans_3d"][-1]
+            visualizer.visualize(output, batch,
+                                 os.path.join(args.vis_out, "tiperr{:.4f}_idx{:04d}.png".format(err.item(), idx)))
+    result = evaluator.summarize()
+    monitor.add('val', epoch, result)
+    monitor.save_metrics("metrics.pkl")
+    monitor.plot_histogram("evaluation.html", plotly=True)
 
 
 def run_visualize():
@@ -94,14 +115,23 @@ def run_visualize():
 
     data_loader = make_data_loader(cfg, is_train=False)
     visualizer = make_visualizer(cfg)
+    if args.vis_out:
+        os.mkdir(args.vis_out)
+    idx = 0
+    #start = timeit.default_timer()
     for batch in tqdm.tqdm(data_loader):
+        idx += 1
         for k in batch:
             if k != 'meta':
                 batch[k] = batch[k].cuda()
         with torch.no_grad():
             output = network(batch['inp'], batch)
-        visualizer.visualize(output, batch)
-
+        if args.vis_out:
+            visualizer.visualize(output, batch, os.path.join(args.vis_out, "{:04d}_.png".format(idx)))
+        else:
+            visualizer.visualize(output, batch)
+    #end = timeit.default_timer()
+    #print("Time in s: ", end - start)
 
 def run_visualize_train():
     from lib.networks import make_network
@@ -217,31 +247,16 @@ def run_render():
 
 def run_custom():
     from tools import handle_custom_dataset
-    data_root = 'data/custom'
+    if args.test:
+        #data_root = 'data/syn_colibri_v1_test'
+        data_root = 'data/real_colibri_v1_val'
+        #data_root = 'data/custom-test'
+    else:
+        data_root = 'data/real_colibri_v1_train'
+        #data_root = 'data/custom-train'
+
     handle_custom_dataset.sample_fps_points(data_root)
     handle_custom_dataset.custom_to_coco(data_root)
-
-
-def run_detector_pvnet():
-    from lib.networks import make_network
-    from lib.datasets import make_data_loader
-    from lib.utils.net_utils import load_network
-    import tqdm
-    import torch
-    from lib.visualizers import make_visualizer
-
-    network = make_network(cfg).cuda()
-    network.eval()
-
-    data_loader = make_data_loader(cfg, is_train=False)
-    visualizer = make_visualizer(cfg)
-    for batch in tqdm.tqdm(data_loader):
-        for k in batch:
-            if k != 'meta':
-                batch[k] = batch[k].cuda()
-        with torch.no_grad():
-            output = network(batch['inp'], batch)
-        visualizer.visualize(output, batch)
 
 
 if __name__ == '__main__':

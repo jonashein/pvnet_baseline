@@ -4,8 +4,10 @@ model_dir: 'data/model'
 network: 'res'
 heads: ''
 task: 'pvnet'
-gpus: (0, 1, 2, 3)
-resume: true
+gpus: [0]
+resume: True
+eval_ep: 1
+monitor: True
 
 train:
     optim: 'adam'
@@ -25,3 +27,4 @@ test:
     dataset: 'CustomTest'
     batch_size: 1
     batch_sampler: 'image_size'
+    un_pnp: True

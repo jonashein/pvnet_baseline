@@ -33,7 +33,10 @@ class Dataset(data.Dataset):
         kpt_2d = np.concatenate([anno['fps_2d'], [anno['center_2d']]], axis=0)
 
         cls_idx = linemod_config.linemod_cls_names.index(anno['cls']) + 1
-        mask = pvnet_data_utils.read_linemod_mask(anno['mask_path'], anno['type'], cls_idx)
+        if os.path.isfile(anno['mask_path']):
+            mask = pvnet_data_utils.read_linemod_mask(anno['mask_path'], anno['type'], cls_idx)
+        else:
+            mask = None
 
         return inp, kpt_2d, mask
 
@@ -50,10 +53,14 @@ class Dataset(data.Dataset):
         if self._transforms is not None:
             inp, kpt_2d, mask = self._transforms(inp, kpt_2d, mask)
 
-        vertex = pvnet_data_utils.compute_vertex(mask, kpt_2d).transpose(2, 0, 1)
-        ret = {'inp': inp, 'mask': mask.astype(np.uint8), 'vertex': vertex, 'img_id': img_id, 'meta': {}}
-        # visualize_utils.visualize_linemod_ann(torch.tensor(inp), kpt_2d, mask, True)
+        ret = {'inp': inp, 'img_id': img_id, 'meta': {}}
 
+        if mask is not None:
+            ret['mask'] = mask.astype(np.uint8)
+            vertex = pvnet_data_utils.compute_vertex(mask, kpt_2d).transpose(2, 0, 1)
+            ret['vertex'] = vertex
+
+        # visualize_utils.visualize_linemod_ann(torch.tensor(inp), kpt_2d, mask, True)
         return ret
 
     def __len__(self):
