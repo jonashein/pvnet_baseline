@@ -70,6 +70,18 @@ python3 pvnet_custom_dataset.py -m assets/drill_segmentation_textured_final.ply 
 python3 pvnet_custom_dataset.py -m assets/drill_segmentation_textured_final.ply -d data/real_colibri_v1/test.txt -o data/ -n real_colibri_v1_test
 ```
 
+## Demo
+
+We provide pretrained models, which can be downloaded [here](https://drive.google.com/file/d/1shh_A7BhNTR2MirjH4PKSMU5GFinx66P/view?usp=sharing).
+Unzip the downloaded archive, and copy the `model` directory of one of the checkpoints to the `data`directory.
+
+Your directory structure should look like this:
+```
+pvnet_baseline/data/model/pvnet/custom/*.pth
+```
+
+Then run the commands listed [below](#evaluation) to evaluate the model.  
+
 ## Training
 
 Pretrain a model on the synthetic dataset:
