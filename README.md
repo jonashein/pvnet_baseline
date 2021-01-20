@@ -1,7 +1,12 @@
 # Towards Markerless Surgical Tool and Hand Pose Estimation: PVNet Baseline
 
-- [Project page](http://medicalaugmentedreality.org/handobject.html)
-<!-- - [Paper](http://arxiv.org/abs/2004.13449) -->
+- [Project page](http://medicalaugmentedreality.org/handobject.html) <!-- - [Paper](http://arxiv.org/abs/2004.13449) -->
+- [Synthetic Grasp Generation](https://github.com/jonashein/grasp_generator)
+- [Synthetic Grasp Rendering](https://github.com/jonashein/grasp_renderer)
+- [Real Dataset Recording](https://github.com/jonashein/handobject_dataset_recorder)
+- [HandObjectNet Baseline](https://github.com/jonashein/handobjectnet_baseline)
+- [PVNet Baseline](https://github.com/jonashein/pvnet_baseline)
+- [Combined Model Baseline](https://github.com/jonashein/baseline_combination)
 
 The structure of this project is described in [project_structure.md](project_structure.md).
 
@@ -73,7 +78,7 @@ python3 pvnet_custom_dataset.py -m assets/drill_segmentation_textured_final.ply 
 ## Demo
 
 We provide pretrained models, which can be downloaded [here](https://drive.google.com/file/d/1shh_A7BhNTR2MirjH4PKSMU5GFinx66P/view?usp=sharing).
-Unzip the downloaded archive, and copy the `model` directory of one of the checkpoints to the `data`directory.
+Unzip the downloaded archive, and copy the `model` directory of one of the checkpoints to the `data` directory.
 
 Your directory structure should look like this:
 ```
